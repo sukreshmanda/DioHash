@@ -4,7 +4,7 @@ A simple hashing(one way) function using cubic diophantine equations
 ## Usage
 Use Python3 and Add the file DioHash to your project repo
 
-```python
+``` python
 import DioHash
 
 DioHash.dio128("text").hexdigest() #for 128-bits hash

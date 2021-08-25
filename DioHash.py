@@ -1,3 +1,17 @@
+def dio128(text):
+	return DioHashGen.dio128(text)
+	
+def dio256(text):
+	return DioHashGen.dio256(text)
+
+def dio512(text):
+	return DioHashGen.dio512(text)
+	
+'''
+	Diophantine is a class that holds the methods to encrypt the block 
+	DioHashGen is a hashing class that uses Diophantine to generate a fixed length hash
+	DioHashGenDigest is a class that is used to hold hash and print it in hexadecimal values
+'''
 class Diophantine:
 	def __init__(self):
 		self.error512bit = [7991590464102700538016803728265574033508963419690358323494598456057559374405435353559091933298276062628651569134596234376322910925441582926210600144944331,			11809832619586756526954249559371746436528431273139600375368976133146945383528295915655142356218600537774726760626255472472679966063758049694648684345853438,	13118985682899543011471564343190407891927667246125977131626165426584269326588351721750502260137645800131689799513730538622596866676040561679885733543275824]
@@ -11,7 +25,13 @@ class Diophantine:
 							284258345208273711794377222192950695752]
 		
 		self.encryptLookpup = {}
-		
+	
+	def genSign(self, num):
+		if(num % 3 == 2):
+			return -num
+		else:
+			return num
+			
 	def cipherGen(self, first, second, third, k):
 		n = 0
 		error = None
@@ -30,6 +50,10 @@ class Diophantine:
 		first %= self.n
 		second %= self.n
 		third %= self.n
+		
+		first = self.genSign(first)
+		second = self.genSign(second)
+		third = self.genSign(third)
 			
 		some = first+error[0]
 		some = (some*(first+error[0]))%self.n_squared
@@ -97,7 +121,7 @@ class Diophantine:
 		plt.title('scatter plot of first 2^11 numbers')
 		plt.show()
 		
-class DioHashDigest:
+class DioHashGenDigest:
 	def __init__(self, num):
 		self._num = num
 		
@@ -110,7 +134,7 @@ class DioHashDigest:
 	def hexdigest(self):
 		return self._hexDigest
 		
-class DioHash:
+class DioHashGen:
 	hashLookup = {}
 	numLookup = {}
 	textLoopup = {}
@@ -124,13 +148,13 @@ class DioHash:
 		if(len(text) == 1):
 			return format(ord(text), '08b')
 		try:
-			return DioHash.textBinaryLookup[text]
+			return DioHashGen.textBinaryLookup[text]
 		except:
-			DioHash.textBinaryLookup[text] = format(ord(text[0]), '08b')+DioHash.textToBinary(text[1:])
-			return DioHash.textBinaryLookup[text]
+			DioHashGen.textBinaryLookup[text] = format(ord(text[0]), '08b')+DioHashGen.textToBinary(text[1:])
+			return DioHashGen.textBinaryLookup[text]
 			
 	def preprocess(text, num):
-		res = DioHash.textToBinary(text)
+		res = DioHashGen.textToBinary(text)
 				
 		size = len(res)
 
@@ -144,79 +168,84 @@ class DioHash:
 		res+=format(size, '064b')
 		return res
 		
-	def dioHash(text, size):
+	def DioHashGen(text, size):
 		
 		block = Diophantine()
 		try:
-			bits = DioHash.textLoopup[text+str(size)]
+			bits = DioHashGen.textLoopup[text+str(size)]
 		except:
-			bits = DioHash.preprocess(text, size)
-			DioHash.textLoopup[text+str(size)] = bits
+			bits = DioHashGen.preprocess(text, size)
+			DioHashGen.textLoopup[text+str(size)] = bits
 			
 		if(size == 256):
-			key = DioHash.key256
+			key = DioHashGen.key256
 		elif(size == 512):
-			key = DioHash.key512
+			key = DioHashGen.key512
 		else:
-			key = DioHash.key1024
+			key = DioHashGen.key1024
 		i = 0
 		
 		while(i<len(bits)):
 			sample = bits[i:i+size]
 			if(size == 256):
 				try:
-					key = DioHash.hashLookup[str(sample)+str(key)]
+					key = DioHashGen.hashLookup[str(sample)+str(key)]
 				except:
 					key = block.encipher256(int(sample, 2), int(key))
-					DioHash.hashLookup[str(sample)+str(key)] = key
+					DioHashGen.hashLookup[str(sample)+str(key)] = key
 			elif(size == 512):
 				try:
-					key = DioHash.hashLookup[str(sample)+str(key)]
+					key = DioHashGen.hashLookup[str(sample)+str(key)]
 				except:
 					key = block.encipher512(int(sample, 2), int(key))
-					DioHash.hashLookup[str(sample)+str(key)] = key
+					DioHashGen.hashLookup[str(sample)+str(key)] = key
 			else:
 				try:
-					key = DioHash.hashLookup[str(sample)+str(key)]
-					DioHash.jk+=1
+					key = DioHashGen.hashLookup[str(sample)+str(key)]
+					DioHashGen.jk+=1
 				except:
 					key = block.encipher1024(int(sample, 2), int(key))
-					DioHash.hashLookup[str(sample)+str(key)] = key
+					DioHashGen.hashLookup[str(sample)+str(key)] = key
 			i+=size
 			
 		return key
 		
 	def dio128(text):
 		try:
-			final = DioHash.numLookup[text+"256"]
+			final = DioHashGen.numLookup[text+"256"]
 		except:
-			final = DioHash.dioHash(text, 256)
-			DioHash.numLookup[text+"256"] = final
-		return DioHashDigest(int(format(final, '0256b')[:128], 2))
+			final = DioHashGen.DioHashGen(text, 256)
+			DioHashGen.numLookup[text+"256"] = final
+		return DioHashGenDigest(int(format(final, '0256b')[:128], 2))
 		
 	def dio256(text):
 		try:
-			final = DioHash.numLookup[text+"512"]
+			final = DioHashGen.numLookup[text+"512"]
 		except:
-			final = DioHash.dioHash(text, 512)
-			DioHash.numLookup[text+"512"] = final
-		return DioHashDigest(int(format(final, '0512b')[:256], 2))
+			final = DioHashGen.DioHashGen(text, 512)
+			DioHashGen.numLookup[text+"512"] = final
+		return DioHashGenDigest(int(format(final, '0512b')[:256], 2))
 	
 	def dio512(text):
 		try:
-			final = DioHash.numLookup[text+"1024"]
+			final = DioHashGen.numLookup[text+"1024"]
 		except:
-			final = DioHash.dioHash(text, 1024)
-			DioHash.numLookup[text+"1024"] = final		
-		return DioHashDigest(int(format(final, '01024b')[:512], 2))
+			final = DioHashGen.DioHashGen(text, 1024)
+			DioHashGen.numLookup[text+"1024"] = final		
+		return DioHashGenDigest(int(format(final, '01024b')[:512], 2))
 	
 	def sample1000Hashes():
 		from datetime import datetime
 		j = "a"
 		dic = {}
-		for i in range(5000):
-			k = DioHash.dio512(j).hexdigest()
+		for i in range(7000):
+			k = DioHashGen.dio512(j).hexdigest()
+			try:
+				print(dic[k], j)
+				print("Found collision")
+				return
+			except:
+				dic[k] = j
 			j+="a"
-
-DioHash.sample1000Hashes()
-
+if(__name__ == '__main__'):
+	print(dio512("sukresh").hexdigest())

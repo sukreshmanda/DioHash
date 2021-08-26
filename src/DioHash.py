@@ -176,13 +176,14 @@ class DioHashGen:
 		except:
 			bits = DioHashGen.preprocess(text, size)
 			DioHashGen.textLoopup[text+str(size)] = bits
-			
+		
 		if(size == 256):
 			key = DioHashGen.key256
 		elif(size == 512):
 			key = DioHashGen.key512
 		else:
 			key = DioHashGen.key1024
+
 		i = 0
 		
 		while(i<len(bits)):
@@ -191,20 +192,20 @@ class DioHashGen:
 				try:
 					key = DioHashGen.hashLookup[str(sample)+str(key)]
 				except:
-					key = block.encipher256(int(sample, 2), int(key))
+					key = block.encipher256(int(key), int(sample, 2))
 					DioHashGen.hashLookup[str(sample)+str(key)] = key
 			elif(size == 512):
 				try:
 					key = DioHashGen.hashLookup[str(sample)+str(key)]
 				except:
-					key = block.encipher512(int(sample, 2), int(key))
+					key = block.encipher512(int(key), int(sample, 2))
 					DioHashGen.hashLookup[str(sample)+str(key)] = key
 			else:
 				try:
 					key = DioHashGen.hashLookup[str(sample)+str(key)]
 					DioHashGen.jk+=1
 				except:
-					key = block.encipher1024(int(sample, 2), int(key))
+					key = block.encipher1024(int(key), int(sample, 2))
 					DioHashGen.hashLookup[str(sample)+str(key)] = key
 			i+=size
 			

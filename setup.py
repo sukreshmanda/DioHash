@@ -5,7 +5,7 @@ with open('README.rst', 'r') as fh:
 	long_description = fh.read()
 setup(
 	name = 'DioHash',
-	version = '2.1.0',
+	version = '2.1.1',
 	Description = 'Python Cryptography package for generating DioHash hashing functions',
 	py_modules = ['DioHash'],
 	package_dir = {'' : 'src'},
